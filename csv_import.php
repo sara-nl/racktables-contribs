@@ -420,11 +420,10 @@ function addObject($csvdata,$row_number)
 
 function addRackImport($csvdata,$row_number) 
 {
-
-	$location = 		$csvdata[1];
-	$location_child = 	$csvdata[2];
-	$rackrow = 			$csvdata[3];
-	$rack = 			$csvdata[4];
+	$location = 		trim($csvdata[1]);
+	$location_child = 	trim($csvdata[2]);
+	$rackrow = 			trim($csvdata[3]);
+	$rack = 			trim($csvdata[4]);
 	if (!isset($csvdata[5])) 
 		$rack_height = 46;
 	else
@@ -539,6 +538,12 @@ function addRackImport($csvdata,$row_number)
 			$rack_id = commitAddObject ($rack, "", 1560, "", array());	// Object type 1560 = rack		
 			commitLinkEntities ('row', $rackrow_id  , 'rack', $rack_id );
 			commitUpdateAttrValue ($rack_id, 27, $rack_height);		// attribute type 27 = height
+
+			// The new rack(s) should be placed on the bottom of the list, sort-wise
+			$rowInfo = getRowInfo($rackrow_id);
+			$sort_order = $rowInfo['count']+1;
+			commitUpdateAttrValue ($rack_id, 29, $sort_order);
+
 			showSuccess ("Line $row_number: Rack ".$rack. " imported; object_id=".$rack_id);
 		}
 			
@@ -611,6 +616,18 @@ function addCableLink($csvdata,$row_number)
 		showError("line $row_number: Import CableLink ". $cable_id. " FAILED; The object-port combination ".$object_b." ".$port_b." does not exist.");
 		return FALSE;
 	}
+
+	// Check if port types are compatible
+	// Prevent SQL LOCK TABLES errors
+	$port1 = getPortInfo($db_result_a['id']);
+	$port2 = getPortInfo($db_result_b['id']);
+
+	if (!arePortTypesCompatible($port1['oif_id'], $port2['oif_id']))
+	{
+		showError("line $row_number: Import CableLink $cable_id FAILED; The porttypes mismatch $object_a $port_a -> $object_b $port_b. ".$port1['oif_name']." != ".$port2['oif_name']);
+		return FALSE;
+	}
+
 
 	// Create Link
 	try 

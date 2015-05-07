@@ -891,6 +891,8 @@ function addObjectTag($csvdata,$row_number)
 
 		foreach($tagNames as $tagName)
 		{
+
+			$tagName = trim($tagName);
 		
 			// Check if tag exists and return tag_id
 			$tagResult = usePreparedSelectBlade ("SELECT TagTree.id from TagTree where TagTree.tag='".$tagName."';");

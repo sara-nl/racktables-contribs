@@ -910,6 +910,7 @@ function addObjectTag($csvdata,$row_number)
 				catch(Exception $e)
 				{
 					showWarning ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.". Entry already exists.");
+					continue;
 				}
 
 				showSuccess ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.".");

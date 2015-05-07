@@ -180,11 +180,11 @@ Usage:
   Syntax: OBJECTTAG
   Value 1, OBJECTTAG
   Value 2, Object Name : Specify the name of the Object to add the tag to(eg. Server)
-  Value 3, Tag Name : Specify the name of the Tag (eg. VM)
+  Value 3, Tag Names : Specify the name of the Tags (eg. VM)
 
   Examples:
-  OBJECTTAG;Server1;Tag1
-  Adds the tag called Tag1 to server object called Server1
+  OBJECTTAG;Server1;Tag1,Tag2
+  Adds the tag called Tag1 and Tag2 to server object called Server1
 
 -----------------------------------------
 */
@@ -874,30 +874,51 @@ function addContainerLink($csvdata,$row_number)
 function addObjectTag($csvdata,$row_number)
 {
 	$objectName = trim ($csvdata[1]);
-	$tagName = trim ($csvdata[2]);
+	$tagNames = explode(',', $csvdata[2]);
 	
-	if ((strlen($objectName) > 0) & (strlen($tagName) > 0))
+	if ((strlen($objectName) > 0) & (!empty($tagNames)))
 	{
 		// Check if object exists and return object_id
 		$objectResult = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='".$objectName."';");
 		$db_Object = $objectResult->fetch (PDO::FETCH_ASSOC);
-		
-		// Check if tag exists and return tag_id
-		$tagResult = usePreparedSelectBlade ("SELECT TagTree.id from TagTree where TagTree.tag='".$tagName."';");
-		$db_Tag = $tagResult->fetch (PDO::FETCH_ASSOC);
-		
-		// if both the object and the tag exist, create an entry in the TagStorage table
-		if (($db_Object) & ($db_Tag))
+
+		if(!$db_Object)
 		{
-			$object_id = $db_Object['id'];
-			$tag_id = $db_Tag['id'];
-			addTagForEntity ('object', $object_id, $tag_id );
-			showSuccess ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.".");
+			showError("Line $row_number: Unable to add tags to object ".$objectName.". The object does not exist.");
+			return False;
 		}
-		else
+
+
+		foreach($tagNames as $tagName)
 		{
-			showError("Line $row_number: Unable to add tag ".$tagName. " to object ".$objectName.". Either the object of the tag does not exist.");
-		}	
+
+			$tagName = trim($tagName);
+
+			// Check if tag exists and return tag_id
+			$tagResult = usePreparedSelectBlade ("SELECT TagTree.id from TagTree where TagTree.tag='".$tagName."';");
+			$db_Tag = $tagResult->fetch (PDO::FETCH_ASSOC);
+
+			// if both the object and the tag exist, create an entry in the TagStorage table
+			if (($db_Tag))
+			{
+				$object_id = $db_Object['id'];
+				$tag_id = $db_Tag['id'];
+				try
+				{
+					addTagForEntity ('object', $object_id, $tag_id );
+				}
+				catch(Exception $e)
+				{
+					showWarning ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.". Entry already exists.");
+				}
+
+				showSuccess ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.".");
+			}
+			else
+			{
+				showError("Line $row_number: Unable to add tag ".$tagName. " to object ".$objectName.". The tag does not exist.");
+			}
+		}
 		
 	}	
 	

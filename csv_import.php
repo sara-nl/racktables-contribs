@@ -175,16 +175,20 @@ Usage:
   CONTAINERLINK;ESX_Host1;VM_1
   Adds VM_1 as a member of the Container ESX_Host1
 
-* Object Tags:
+* Tags:
 
-  Syntax: OBJECTTAG
-  Value 1, OBJECTTAG
-  Value 2, Object Name : Specify the name of the Object to add the tag to(eg. Server)
+  Syntax: TAG
+  Value 1, TAG
+  Value 2, realm: object, ipv4net (all lower case!)
+  Value 2, Name : Specify the name of the Object to add the tag to(eg. Server )
   Value 3, Tag Names : Specify the name of the Tags (eg. VM)
 
   Examples:
-  OBJECTTAG;Server1;Tag1,Tag2
+  TAG;object;Server1;Tag1,Tag2
   Adds the tag called Tag1 and Tag2 to server object called Server1
+
+  TAG;ipv4net;192.168.1.0;Tag1,Tag2
+  Adds the tag called Tag1 and Tag2 to ipv4net object called 192.168.1.0
 
 -----------------------------------------
 */
@@ -315,7 +319,7 @@ function importData()
 				if ($csvdata[0] == "OBJECTIP") 			addObjectIP($csvdata,$row_number);
 				if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 				if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
-				if ($csvdata[0] == "OBJECTTAG")			addObjectTag($csvdata,$row_number);
+				if ($csvdata[0] == "TAG")			addTag($csvdata,$row_number);
 				$row_number++;
 			}
 			fclose($handle);
@@ -343,7 +347,7 @@ function importData()
 			if ($csvdata[0] == "OBJECTIP") 			addObjectIP($csvdata,$row_number);
 			if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 			if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
-			if ($csvdata[0] == "OBJECTTAG")			addObjectTag($csvdata,$row_number);
+			if ($csvdata[0] == "TAG")			addTag($csvdata,$row_number);
 			$row_number++;
 		}		
 	}
@@ -871,23 +875,45 @@ function addContainerLink($csvdata,$row_number)
 	}
 }
 
-function addObjectTag($csvdata,$row_number)
+function addTag($csvdata,$row_number)
 {
-	$objectName = trim ($csvdata[1]);
-	$tagNames = explode(',', $csvdata[2]);
 	
-	if ((strlen($objectName) > 0) && (!empty($tagNames)))
-	{
-		// Check if object exists and return object_id
-		$objectResult = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='".$objectName."';");
-		$db_Object = $objectResult->fetch (PDO::FETCH_ASSOC);
+	$realm = trim($csvdata[1]);
+	$Name = trim ($csvdata[2]);
+	$tagNames = explode(',', $csvdata[3]);
 
-		if(!$db_Object)
+	if ((!empty($realm)) && (strlen($Name) > 0) && (!empty($tagNames)))
+	{
+
+		switch($realm)
 		{
-			showError("Line $row_number: Unable to add tags to object ".$objectName.". The object does not exist.");
-			return False;
+			case 'object':
+				// Check if object exists and return object_id
+				$result = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='$Name';");
+				$retval = $result->fetch (PDO::FETCH_ASSOC);
+				if($retval)
+					$entity_id = $retval['id'];
+				else
+					$entity_id = NULL;
+				break;
+			case 'ipv4net':
+				$entity_id = getIPAddressNetworkId(ip_parse($Name));
+				$entity = spotEntity($realm,$entity_id);
+				if($entity)
+					$Name = ip_format($entity['ip_bin']).'/'.$entity['mask'];
+
+				break;
+			default:
+				showError("Line $row_number: Realm $realm not implemented yet!.");
+				return False;
+				break;
 		}
 
+		if(!$entity)
+		{
+			showError("Line $row_number: Unable to add tags to $realm ".$Name.". The $realm does not exist.");
+			return False;
+		}
 
 		foreach($tagNames as $tagName)
 		{
@@ -901,23 +927,22 @@ function addObjectTag($csvdata,$row_number)
 			// if both the object and the tag exist, create an entry in the TagStorage table
 			if (($db_Tag))
 			{
-				$object_id = $db_Object['id'];
 				$tag_id = $db_Tag['id'];
 				try
 				{
-					addTagForEntity ('object', $object_id, $tag_id );
+					addTagForEntity ($realm, $entity_id, $tag_id );
 				}
 				catch(Exception $e)
 				{
-					showWarning ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.". Entry already exists.");
+					showWarning ("Line $row_number: Added tag ".$tagName. " to object ".$Name.". Entry already exists. ".$e);
 					continue;
 				}
 
-				showSuccess ("Line $row_number: Added tag ".$tagName. " to object ".$objectName.".");
+				showSuccess ("Line $row_number: Added tag ".$tagName. " to object ".$Name.".");
 			}
 			else
 			{
-				showError("Line $row_number: Unable to add tag ".$tagName. " to object ".$objectName.". The tag does not exist.");
+				showError("Line $row_number: Unable to add tag ".$tagName. " to object ".$Name.". The tag does not exist.");
 			}
 		}
 		

@@ -890,17 +890,27 @@ function addTag($csvdata,$row_number)
 			case 'object':
 				// Check if object exists and return object_id
 				$result = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='$Name';");
-				$retval = $result->fetch (PDO::FETCH_ASSOC);
-				if($retval)
-					$entity_id = $retval['id'];
-				else
-					$entity_id = NULL;
+				$entity = $result->fetch (PDO::FETCH_ASSOC);
 				break;
 			case 'ipv4net':
-				$entity_id = getIPAddressNetworkId(ip_parse($Name));
-				$entity = spotEntity($realm,$entity_id);
+				$a = explode('/',$Name,2);
+				$ipaddress = $a[0];
+				$ip_bin = ip_parse($ipaddress);
+				if(isset($a[1]))
+					$masklen = strval($a[1]);
+				else
+					$masklen = 32;
+
+				/* from database.php fetchIPv4AddressNetworkRow() */
+				$query = 'select * from IPv4Network where ' .
+				"? & (4294967295 >> (32 - mask)) << (32 - mask) = ip " .
+				"and mask = ? " .
+				'order by mask desc limit 1';
+				$result = usePreparedSelectBlade ($query, array (ip4_bin2db ($ip_bin), $masklen));
+				$entity = $result->fetch (PDO::FETCH_ASSOC);
+
 				if($entity)
-					$Name = ip_format($entity['ip_bin']).'/'.$entity['mask'];
+					$Name = "$ipaddress/".$entity['mask'];
 
 				break;
 			default:
@@ -914,6 +924,8 @@ function addTag($csvdata,$row_number)
 			showError("Line $row_number: Unable to add tags to $realm ".$Name.". The $realm does not exist.");
 			return False;
 		}
+
+		$entity_id = $entity['id'];
 
 		foreach($tagNames as $tagName)
 		{

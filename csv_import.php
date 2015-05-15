@@ -876,7 +876,7 @@ function addObjectTag($csvdata,$row_number)
 	$objectName = trim ($csvdata[1]);
 	$tagNames = explode(',', $csvdata[2]);
 	
-	if ((strlen($objectName) > 0) & (!empty($tagNames)))
+	if ((strlen($objectName) > 0) && (!empty($tagNames)))
 	{
 		// Check if object exists and return object_id
 		$objectResult = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='".$objectName."';");

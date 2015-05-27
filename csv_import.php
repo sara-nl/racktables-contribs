@@ -892,6 +892,11 @@ function addTag($csvdata,$row_number)
 				$result = usePreparedSelectBlade ("SELECT Object.id from Object where Object.name='$Name';");
 				$entity = $result->fetch (PDO::FETCH_ASSOC);
 				break;
+			case 'rack':
+				// Check if rack and return object_id
+				$result = usePreparedSelectBlade ("SELECT Rack.id from Rack where Rack.name='$Name';");
+				$entity = $result->fetch (PDO::FETCH_ASSOC);
+				break;
 			case 'ipv4net':
 				$a = explode('/',$Name,2);
 				$ipaddress = $a[0];

@@ -186,6 +186,18 @@ Usage:
   OBJECTTAG;Server1;Tag1
   Adds the tag called Tag1 to server object called Server1
 
+* UPDATEIP
+  Syntax: UPDATEIP
+  Value 1: UPDATEIP
+  Value 2: IP Address
+  Value 3: Name
+  Value 4: Reseverd: yes or no
+  Value 5: Comment
+
+  Examples:
+  UPDATEIP;192.168.1.2;Test Address;no;Testing only
+  Updates IP 192.168.1.2 with Name Test, Reserved no and Comment "Testing only"
+
 -----------------------------------------
 */
 
@@ -316,6 +328,7 @@ function importData()
 				if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 				if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
 				if ($csvdata[0] == "OBJECTTAG")			addObjectTag($csvdata,$row_number);
+				if ($csvdata[0] == "UPDATEIP")			updateIP($csvdata,$row_number);
 				$row_number++;
 			}
 			fclose($handle);
@@ -344,6 +357,7 @@ function importData()
 			if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 			if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
 			if ($csvdata[0] == "OBJECTTAG")			addObjectTag($csvdata,$row_number);
+			if ($csvdata[0] == "UPDATEIP")			updateIP($csvdata,$row_number);
 			$row_number++;
 		}		
 	}
@@ -902,5 +916,74 @@ function addObjectTag($csvdata,$row_number)
 	}	
 	
 }
+
+function updateIP($csvdata,$row_number)
+{
+	$ipaddress = trim ($csvdata[1]);
+	$name =	trim ($csvdata[2]);
+	$reserved = 	trim ($csvdata[3]);
+	$comment = 	trim ($csvdata[4]);
+
+	if(isset($csvdata[5]))
+		$user = trim ($csvdata[5]);
+	else
+		$user = false;
+
+
+	$ip_bin = ip_parse($ipaddress);
+
+	$netaddress = getIPAddressNetworkID($ip_bin);
+	if(empty($netaddress))
+	{
+		showError("line $row_number: FAILED. update IP $ipaddress does not exist!");
+		return False;
+	}
+
+	$address = getIPAddress($ip_bin);
+	if($address['reserved'] == 'yes')
+	{
+		showError("line $row_number: FAILED. update IP $ipaddress already reserved!");
+		return False;
+	}
+
+	try
+	{
+		if($user)
+			addIPLogEntry_User($ip_bin, "Import Source Username", $user);
+
+		updateAddress ($ip_bin, $name, $reserved, $comment);
+	}
+	catch (Exception $e)
+	{
+		showError("line $row_number: update IP $ipaddress FAILED" . "Reason: ". $e);
+		return FALSE;
+	}
+
+	showSuccess ("Line $row_number: IP $ipaddress updated.");
+}
+
+function addIPLogEntry_User($ip_bin, $message, $username)
+{
+
+	switch (strlen ($ip_bin))
+	{
+		case 4:
+			usePreparedExecuteBlade
+			(
+				"INSERT INTO IPv4Log (ip, date, user, message) VALUES (?, NOW(), ?, ?)",
+				array (ip4_bin2db ($ip_bin), $username, $message)
+			);
+			break;
+		case 16:
+			usePreparedExecuteBlade
+			(
+				"INSERT INTO IPv6Log (ip, date, user, message) VALUES (?, NOW(), ?, ?)",
+				array ($ip_bin, $username, $message)
+			);
+			break;
+		default: throw new InvalidArgException ('ip_bin', $ip_bin, "Invalid binary IP");
+	}
+}
+
 
 ?>

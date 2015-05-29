@@ -924,6 +924,11 @@ function updateIP($csvdata,$row_number)
 	$reserved = 	trim ($csvdata[3]);
 	$comment = 	trim ($csvdata[4]);
 
+	if(isset($csvdata[5]))
+		$user = trim ($csvdata[5]);
+	else
+		$user = false;
+
 
 	$ip_bin = ip_parse($ipaddress);
 
@@ -943,6 +948,9 @@ function updateIP($csvdata,$row_number)
 
 	try
 	{
+		if($user)
+			addIPLogEntry_User($ip_bin, "Import Source Username", $user);
+
 		updateAddress ($ip_bin, $name, $reserved, $comment);
 	}
 	catch (Exception $e)
@@ -953,4 +961,29 @@ function updateIP($csvdata,$row_number)
 
 	showSuccess ("Line $row_number: IP $ipaddress updated.");
 }
+
+function addIPLogEntry_User($ip_bin, $message, $username)
+{
+
+	switch (strlen ($ip_bin))
+	{
+		case 4:
+			usePreparedExecuteBlade
+			(
+				"INSERT INTO IPv4Log (ip, date, user, message) VALUES (?, NOW(), ?, ?)",
+				array (ip4_bin2db ($ip_bin), $username, $message)
+			);
+			break;
+		case 16:
+			usePreparedExecuteBlade
+			(
+				"INSERT INTO IPv6Log (ip, date, user, message) VALUES (?, NOW(), ?, ?)",
+				array ($ip_bin, $username, $message)
+			);
+			break;
+		default: throw new InvalidArgException ('ip_bin', $ip_bin, "Invalid binary IP");
+	}
+}
+
+
 ?>

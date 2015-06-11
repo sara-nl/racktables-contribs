@@ -416,8 +416,8 @@ function addObject($csvdata,$row_number)
 	if ((count($ifName) > 0) & (count($ifType > 0)) & (count($ifName) == count($ifType)) ) 
 	{
 		// temporary disable autocreation of ports
-		$tempAUTOPORTS_CONFIG =  getConfigVar ('AUTOPORTS_CONFIG');
-		setConfigVar ('AUTOPORTS_CONFIG',"");
+		//$tempAUTOPORTS_CONFIG =  getConfigVar ('AUTOPORTS_CONFIG');
+		//setConfigVar ('AUTOPORTS_CONFIG',"");
 
 		for ($i=0 ; $i < count($ifName); $i++ ) 
 		{
@@ -449,7 +449,7 @@ function addObject($csvdata,$row_number)
 			}
 		}
 
-		setConfigVar ('AUTOPORTS_CONFIG',$tempAUTOPORTS_CONFIG);
+		//setConfigVar ('AUTOPORTS_CONFIG',$tempAUTOPORTS_CONFIG);
 	}
 	else 
 	{

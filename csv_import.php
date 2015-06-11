@@ -177,11 +177,16 @@ Usage:
 
 * Tags:
 
+  old Syntax: OBJECTTAG
+  Value 1, OBJECTTAG
+  Value 2, Object Name : Specify the name of the Object to add the tag to(eg. Server)
+  Value 3, Tag Name : Specify the name of the Tag (eg. VM)
+
   Syntax: TAG
   Value 1, TAG
   Value 2, realm: object, ipv4net (all lower case!)
-  Value 2, Name : Specify the name of the Object to add the tag to(eg. Server )
-  Value 3, Tag Names : Specify the name of the Tags (eg. VM)
+  Value 3, Name : Specify the name of the Object to add the tag to(eg. Server )
+  Value 4, Tag Names : Specify the name of the Tags (eg. VM)
 
   Examples:
   TAG;object;Server1;Tag1,Tag2
@@ -319,6 +324,7 @@ function importData()
 				if ($csvdata[0] == "OBJECTIP") 			addObjectIP($csvdata,$row_number);
 				if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 				if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
+				if ($csvdata[0] == "OBJECTTAG")			addTag($csvdata,$row_number);
 				if ($csvdata[0] == "TAG")			addTag($csvdata,$row_number);
 				$row_number++;
 			}
@@ -347,6 +353,7 @@ function importData()
 			if ($csvdata[0] == "OBJECTIP") 			addObjectIP($csvdata,$row_number);
 			if ($csvdata[0] == "OBJECTATTRIBUTE") 	setObjectAttributes($csvdata,$row_number);
 			if ($csvdata[0] == "CONTAINERLINK")		addContainerLink($csvdata,$row_number);
+			if ($csvdata[0] == "OBJECTTAG")			addTag($csvdata,$row_number);
 			if ($csvdata[0] == "TAG")			addTag($csvdata,$row_number);
 			$row_number++;
 		}		
@@ -878,6 +885,17 @@ function addContainerLink($csvdata,$row_number)
 function addTag($csvdata,$row_number)
 {
 	
+	$cmd = trim($csvdata[0]);
+	if($cmd == "OBJECTTAG")
+	{
+		$newdata[0] = "TAG";
+		$newdata[1] = "object";
+		$newdata[2] = $csvdata[1];
+		$newdata[3] = $csvdata[2];
+
+		$csvdata = $newdata;
+	}
+
 	$realm = trim($csvdata[1]);
 	$Name = trim ($csvdata[2]);
 	$tagNames = explode(',', $csvdata[3]);

@@ -406,10 +406,16 @@ function addObject($csvdata,$row_number)
 	{
 		try 
 		{
+			// temporary disable autocreation of ports
+			$tempAUTOPORTS_CONFIG =  getConfigVar ('AUTOPORTS_CONFIG');
+			setConfigVar ('AUTOPORTS_CONFIG',"");
+
 			$object_id = commitAddObject ( $object_name, $object_label, $object_type, $object_assettag, array());
+			setConfigVar ('AUTOPORTS_CONFIG',$tempAUTOPORTS_CONFIG);
 		}
 		catch (Exception $e) 
 		{ 
+			setConfigVar ('AUTOPORTS_CONFIG',$tempAUTOPORTS_CONFIG);
 			showError("line $row_number: Import ". $object_type_name. " Object ".$object_name. " FAILED; object already exists");
 			return FALSE;
 		}
@@ -419,10 +425,6 @@ function addObject($csvdata,$row_number)
 
 	if ((count($ifName) > 0) & (count($ifType > 0)) & (count($ifName) == count($ifType)) ) 
 	{
-		// temporary disable autocreation of ports
-		$tempAUTOPORTS_CONFIG =  getConfigVar ('AUTOPORTS_CONFIG');
-		setConfigVar ('AUTOPORTS_CONFIG',"");
-
 		for ($i=0 ; $i < count($ifName); $i++ ) 
 		{
 			if (strlen($ifName[$i]) > 0)
@@ -452,8 +454,6 @@ function addObject($csvdata,$row_number)
 					$new_port_id = commitAddPort ( $object_id, trim ($ifName[$i]), trim ($ifType[$i]), "", "" );
 			}
 		}
-
-		setConfigVar ('AUTOPORTS_CONFIG',$tempAUTOPORTS_CONFIG);
 	}
 	else 
 	{

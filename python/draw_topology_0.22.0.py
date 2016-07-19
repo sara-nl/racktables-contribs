@@ -170,18 +170,18 @@ def fnc_build_query_objetos(vector):
 	i=1
 	
 	query1=(
-		"select "
-		"OBJ.name, "
-		"TS.entity_id "
-		"from "
-		"TagStorage as TS join Object as OBJ on (TS.entity_id=OBJ.id) "
-		"where entity_realm ='object' and "
+		"SELECT "
+		"obj.name, "
+		"ts.entity_id "
+		"FROM "
+		"TagStorage AS ts JOIN Object AS obj ON (ts.entity_id=obj.id) "
+		"WHERE entity_realm ='object' AND "
 	)
 	
 	for row in vector:
 		obj_id=str(row[0])
 		if i < len_vector:
-			query2 = query2 + "tag_id = " + obj_id + " or "
+			query2 = query2 + "tag_id = " + obj_id + " OR "
 		else:
 			query2 = query2 + "tag_id = " + obj_id
 		i=i+1
@@ -198,13 +198,13 @@ def fnc_build_query_topo_id(vector):
 	i=1
 
 	query1=(
-		"select id from TagTree where "
+		"SELECT id FROM TagTree WHERE "
 	)
 
 	for row in vector:
 		obj_id="'" + row + "'"
 		if i < len_vector:
-			query2 = query2 + "tag = " + obj_id + " or "
+			query2 = query2 + "tag = " + obj_id + " OR "
 		else:
 			query2 = query2 + "tag = " + obj_id
 		i=i+1
@@ -236,24 +236,24 @@ def fnc_build_query_attributes(vector):
 	len_vector = len(vector)
 	
 	query1=(
-	"select "
+	"SELECT "
 	"ob.name, "
-	"concat(ob.name,\"_\",av.string_value) as node, "
+	"CONCAT(ob.name,\"_\",av.string_value) AS node, "
 	"a.name, "
 	"av.string_value, "
 	"d.dict_value "
-	"from Object as ob "
-	"join AttributeValue as av on (ob.id=av.object_id) "
-	"join Attribute as a on (av.attr_id=a.id) "
-	"left join Dictionary as d on (d.dict_key=av.uint_value) "
-	"where (a.name = 'Integrado' or a.name = 'HW type' or a.name = 'HW function' or a.name = 'TxType_CKT_ID' or a.name like '%Ref%') "
-	"and ("
+	"FROM Object as ob "
+	"JOIN AttributeValue AS av ON (ob.id=av.object_id) "
+	"JOIN Attribute AS a ON (av.attr_id=a.id) "
+	"LEFT JOIN Dictionary AS d ON (d.dict_key=av.uint_value) "
+	"WHERE (a.name = 'Integrado' OR a.name = 'HW type' OR a.name = 'HW function' OR a.name = 'TxType_CKT_ID' OR a.name like '%Ref%') "
+	"AND ("
 	)
 	i=1
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ob.id = " + obj_id + " or "
+			query2 = query2 + "ob.id = " + obj_id + " OR "
 		else:
 			query2 = query2 + "ob.id = " + obj_id 
 		i=i+1
@@ -264,19 +264,19 @@ def fnc_build_query_attributes(vector):
 	"SELECT "
 	"ob.name AS obj1, "
 	"'TBD1', "
-	"concat(ob.name,'_',ip4.name) AS int_name1, "
+	"CONCAT(ob.name,'_',ip4.name) AS int_name1, "
 	"INET_NTOA(ip4.ip) as ip, "
 	"'TBD2' "
 	"FROM Object AS ob "
 	"JOIN IPv4Allocation AS ip4 ON (ip4.object_id=ob.id) "
-	"where ip4.name = 'system' "
-	"and ("
+	"WHERE ip4.name = 'system' "
+	"AND ("
 	)
 	i=1
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query4 = query4 + "ob.id = " + obj_id + " or "
+			query4 = query4 + "ob.id = " + obj_id + " OR "
 		else:
 			query4 = query4 + "ob.id = " + obj_id 
 		i=i+1
@@ -306,7 +306,7 @@ def fnc_build_query_interfaces(vector):
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ro1.id = " + obj_id + " or "
+			query2 = query2 + "ro1.id = " + obj_id + " OR "
 		else:
 			query2 = query2 + "ro1.id = " + obj_id
 		i=i+1
@@ -327,8 +327,8 @@ def fnc_build_query_connections(vector):
 	query1=(
 		"SELECT "
 		"ro1.name AS obj1, "
-		"ro1.id as obj1_id, "
-		"concat(ro1.name,'_',p1.label) AS int_name1, "
+		"ro1.id AS obj1_id, "
+		"CONCAT(ro1.name,'_',p1.label) AS int_name1, "
 		"p1.name AS port1, "
 		"Link.cable, "
 		"p2.name AS port2, "
@@ -351,9 +351,9 @@ def fnc_build_query_connections(vector):
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ro1.id = " + obj_id + " or ro2.id = " + obj_id + " or "
+			query2 = query2 + "ro1.id = " + obj_id + " OR ro2.id = " + obj_id + " OR "
 		else:
-			query2 = query2 + "ro1.id = " + obj_id + " or ro2.id = " + obj_id
+			query2 = query2 + "ro1.id = " + obj_id + " OR ro2.id = " + obj_id
 		i=i+1
 
 	query = query1 + query2 + ")"
@@ -361,7 +361,7 @@ def fnc_build_query_connections(vector):
 	return query
 	
 
-# Funcion que organiza los puertos de cada nodo
+# Function that organizes the ports of each router
 def fnc_port_list(routers):
 	router_list=[]
 	port_list=[]

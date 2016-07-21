@@ -46,8 +46,8 @@ from itertools import groupby
 # Globals
 ########################################################################
 
-ipran_tx = ["LAG_Y","HAIRPIN_Y","ARSAT","SDH","RADIO","DWDM","CDWM","FO",""]
-version_script="21"
+ipran_tx = ["LAG_Y","HAIRPIN_Y","SDH","RADIO","DWDM","CDWM","FO",""]
+version_script="0.22.0"
 
 ########################################################################
 # Functions
@@ -139,7 +139,7 @@ def fnc_build_filename(vector):
 		agregador = info[0][1]
 		topologia = info[0][2]
 
-		topoName1 = "Claro Argentina - Topología "
+		topoName1 = "Topología "
 		topoName2 = tipoTopo
 		topoName3 = " - MR LR - "
 		topoName4 = topologia
@@ -170,18 +170,18 @@ def fnc_build_query_objetos(vector):
 	i=1
 	
 	query1=(
-		"SELECT "
-		"obj.name, "
-		"ts.entity_id "
-		"FROM "
-		"TagStorage AS ts JOIN Object AS obj ON (ts.entity_id=obj.id) "
-		"WHERE entity_realm ='object' AND "
+		"select "
+		"OBJ.name, "
+		"TS.entity_id "
+		"from "
+		"TagStorage as TS join Object as OBJ on (TS.entity_id=OBJ.id) "
+		"where entity_realm ='object' and "
 	)
 	
 	for row in vector:
 		obj_id=str(row[0])
 		if i < len_vector:
-			query2 = query2 + "tag_id = " + obj_id + " OR "
+			query2 = query2 + "tag_id = " + obj_id + " or "
 		else:
 			query2 = query2 + "tag_id = " + obj_id
 		i=i+1
@@ -198,13 +198,13 @@ def fnc_build_query_topo_id(vector):
 	i=1
 
 	query1=(
-		"SELECT id FROM TagTree WHERE "
+		"select id from TagTree where "
 	)
 
 	for row in vector:
 		obj_id="'" + row + "'"
 		if i < len_vector:
-			query2 = query2 + "tag = " + obj_id + " OR "
+			query2 = query2 + "tag = " + obj_id + " or "
 		else:
 			query2 = query2 + "tag = " + obj_id
 		i=i+1
@@ -236,24 +236,24 @@ def fnc_build_query_attributes(vector):
 	len_vector = len(vector)
 	
 	query1=(
-	"SELECT "
+	"select "
 	"ob.name, "
-	"CONCAT(ob.name,\"_\",av.string_value) AS node, "
+	"concat(ob.name,\"_\",av.string_value) as node, "
 	"a.name, "
 	"av.string_value, "
 	"d.dict_value "
-	"FROM Object as ob "
-	"JOIN AttributeValue AS av ON (ob.id=av.object_id) "
-	"JOIN Attribute AS a ON (av.attr_id=a.id) "
-	"LEFT JOIN Dictionary AS d ON (d.dict_key=av.uint_value) "
-	"WHERE (a.name = 'Integrado' OR a.name = 'HW type' OR a.name = 'HW function' OR a.name = 'TxType_CKT_ID' OR a.name like '%Ref%') "
-	"AND ("
+	"from Object as ob "
+	"join AttributeValue as av on (ob.id=av.object_id) "
+	"join Attribute as a on (av.attr_id=a.id) "
+	"left join Dictionary as d on (d.dict_key=av.uint_value) "
+	"where (a.name = 'Integrado' or a.name = 'HW type' or a.name = 'HW function' or a.name = 'TxType_CKT_ID' or a.name like '%Ref%') "
+	"and ("
 	)
 	i=1
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ob.id = " + obj_id + " OR "
+			query2 = query2 + "ob.id = " + obj_id + " or "
 		else:
 			query2 = query2 + "ob.id = " + obj_id 
 		i=i+1
@@ -264,19 +264,19 @@ def fnc_build_query_attributes(vector):
 	"SELECT "
 	"ob.name AS obj1, "
 	"'TBD1', "
-	"CONCAT(ob.name,'_',ip4.name) AS int_name1, "
+	"concat(ob.name,'_',ip4.name) AS int_name1, "
 	"INET_NTOA(ip4.ip) as ip, "
 	"'TBD2' "
 	"FROM Object AS ob "
 	"JOIN IPv4Allocation AS ip4 ON (ip4.object_id=ob.id) "
-	"WHERE ip4.name = 'system' "
-	"AND ("
+	"where ip4.name = 'system' "
+	"and ("
 	)
 	i=1
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query4 = query4 + "ob.id = " + obj_id + " OR "
+			query4 = query4 + "ob.id = " + obj_id + " or "
 		else:
 			query4 = query4 + "ob.id = " + obj_id 
 		i=i+1
@@ -306,7 +306,7 @@ def fnc_build_query_interfaces(vector):
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ro1.id = " + obj_id + " OR "
+			query2 = query2 + "ro1.id = " + obj_id + " or "
 		else:
 			query2 = query2 + "ro1.id = " + obj_id
 		i=i+1
@@ -327,8 +327,8 @@ def fnc_build_query_connections(vector):
 	query1=(
 		"SELECT "
 		"ro1.name AS obj1, "
-		"ro1.id AS obj1_id, "
-		"CONCAT(ro1.name,'_',p1.label) AS int_name1, "
+		"ro1.id as obj1_id, "
+		"concat(ro1.name,'_',p1.label) AS int_name1, "
 		"p1.name AS port1, "
 		"Link.cable, "
 		"p2.name AS port2, "
@@ -351,9 +351,9 @@ def fnc_build_query_connections(vector):
 	for row in vector:
 		obj_id=str(row[1])
 		if i < len_vector:
-			query2 = query2 + "ro1.id = " + obj_id + " OR ro2.id = " + obj_id + " OR "
+			query2 = query2 + "ro1.id = " + obj_id + " or ro2.id = " + obj_id + " or "
 		else:
-			query2 = query2 + "ro1.id = " + obj_id + " OR ro2.id = " + obj_id
+			query2 = query2 + "ro1.id = " + obj_id + " or ro2.id = " + obj_id
 		i=i+1
 
 	query = query1 + query2 + ")"
@@ -361,7 +361,7 @@ def fnc_build_query_connections(vector):
 	return query
 	
 
-# Function that organizes the ports of each router
+# Funcion que organiza los puertos de cada nodo
 def fnc_port_list(routers):
 	router_list=[]
 	port_list=[]
@@ -462,9 +462,9 @@ def fnc_add_atributes_to_dic_global(attributes):
 		
 # Function that creates a list which holds each router and all its ports.
 # Input: object_connections
-# [('CF618_JURI70_SARM', '1/1/1'), ('CF618_JURI70_SARM', '1/1/2')]
+# [('Router1', '1/1/1'), ('Router1', '1/1/2')]
 # Output
-# ('CF618_JURI70_SARM_1/1/1', {'label': '1/1/1'})
+# ('Router1/1/1', {'label': '1/1/1'})
 # The output of this function is used as input to graphviz
 def fnc_node_list(routers,sync_dict, router_mode, graph_hp, graph_lag, graph_cpam):
 	
@@ -525,13 +525,8 @@ def fnc_node_list(routers,sync_dict, router_mode, graph_hp, graph_lag, graph_cpa
 # Function that crosses the connections and interfaces to come out
 # with a proper list
 #
-# Input:
-#('BA123_OLA70_SAR28', 172L, 'BA123_OLA70_SAR28_OLA70toBBL70_2_1G', '1/6/8', None, '2/2/14', 'BA024_BBL70_SR7_BBL70toOLA70_2_1G', 'BA024_BBL70_SR7', 418L, 'Router', '1000Base-T', '1000Base-T')
-#('BA433_CHI70_SAR8', 220L, 'BA433_CHI70_SAR8_CHI70toBBL70_1_1G', '1/2/8', None, '2/2/9', 'BA024_BBL70_SR7_BBL70toCHI70_1_1G', 'BA024_BBL70_SR7', 418L, 'Router', '1000Base-T', '1000Base-T')
-#
 # Output:
-#('BA359_MBT70_SAR8', 105L, '1/1/7', None, '2/2/10', 'BA024_BBL70_SR7', 418L, 'Router', '10.2.34.113', '10.2.34.114', '1000Base-T', '1000Base-T')
-#('BA173_MCL70_SAR8', 144L, '1/3/7', None, '1/2/13', 'BA024_BBL71_SR7', 1407L, 'Router', '10.2.34.142', '10.2.34.141', '1000Base-T', '1000Base-T')
+#('Router1', 105L, '1/1/7', None, '2/2/10', 'Router2', 418L, 'Router', '10.2.34.113', '10.2.34.114', '1000Base-T', '1000Base-T')
 #
 def fnc_cross_conn_inter(connections,interfaces):
 	connection_list=[]
@@ -752,16 +747,16 @@ def fnc_port_string(router_label, port_string, color, router_mode, router_functi
 # Program
 ########################################################################
 
-db = MySQLdb.connect(host="a.b.c.d", 	# your host, usually localhost
+db = MySQLdb.connect(host="10.10.61.10", 	# your host, usually localhost
                	     port=3306,
-                     user="user", 			# your username
-                     passwd="pass", 	# your password
+                     user="root", 			# your username
+                     passwd="mysqlroot", 	# your password
                      db="racktables") 		# name of the data base
 
 topo_name = raw_input(
 	"\nInput the tag name.\n"
 	"If you wish to graph more than one topology, separate those with a comma (,) with no space.\n"
-	"Example: racktest1,racktest2: ")
+	"Example: topo1,topo2: ")
 if not topo_name:
 	print "None has been input.\n"
 	quit()
@@ -787,12 +782,6 @@ if fnc_check_for_topo(topo_id) == 0: quit()
 
 #(objeto_name, object_id)
 
-#('ST206_STA70_SR7', 319L)
-#('ST120_CMS70_SARM', 589L)
-#('ST209_ST970_SARM', 590L)
-#('ST203_ST470_SARM', 633L)
-#('ST202_P9J70_SARM', 2503L)
-
 query10 = fnc_build_query_objetos(topo_id)
 
 cur = db.cursor()
@@ -806,10 +795,10 @@ object_list = list(cur.fetchall())
 # It also brings de system IP of the router.
 # The result is the following.
 
-#('ST120_CMS70_SARM', 'ST120_CMS70_SARM_1/1/1', 'Sync_Ref1', '1/1/1', None, '10.2.21.168')
-#('ST120_CMS70_SARM', 'ST120_CMS70_SARM_1/1/2', 'Sync_Ref2', '1/1/2', None, '10.2.21.168')
-#('ST120_CMS70_SARM', None, 'Sync_Ref_Order', None, 'ref1 ref2 external', '10.2.21.168')
-#('ST120_CMS70_SARM', None, 'Integrado', None, 'si', '10.2.21.168')
+#('Router1', 'Router1_1/1/1', 'Sync_Ref1', '1/1/1', None, '10.2.21.168')
+#('Router1', 'Router1_1/1/2', 'Sync_Ref2', '1/1/2', None, '10.2.21.168')
+#('Router1', None, 'Sync_Ref_Order', None, 'ref1 ref2 external', '10.2.21.168')
+#('Router1', None, 'Integrado', None, 'si', '10.2.21.168')
 
 query15=fnc_build_query_attributes(object_list)
 cur=db.cursor()
@@ -827,10 +816,7 @@ global_dict = fnc_add_atributes_to_dic_global(attr_list)
 
 #(Router1, port1, cableID, port1, Router2)
 
-#('BA123_OLA70_SAR28', 172L, 'BA123_OLA70_SAR28_OLA70toBBL70_2_1G', '1/6/8', None, '2/2/14', 'BA024_BBL70_SR7_BBL70toOLA70_2_1G', 'BA024_BBL70_SR7', 418L, 'Router', '1000Base-T', '1000Base-T')
-#('BA433_CHI70_SAR8', 220L, 'BA433_CHI70_SAR8_CHI70toBBL70_1_1G', '1/2/8', None, '2/2/9', 'BA024_BBL70_SR7_BBL70toCHI70_1_1G', 'BA024_BBL70_SR7', 418L, 'Router', '1000Base-T', '1000Base-T')
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_To_PE01', '1/1/1', 'LAG1', '1/44', 'BAH-PE-R01_To_BBL70', 'BAH-PE-R01', 1553L, 'Router7750', '1000Base-T', '1000Base-T')
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_To_PE01', '1/1/2', 'LAG1', '1/45', 'BAH-PE-R01_To_BBL70', 'BAH-PE-R01', 1553L, 'Router7750', '1000Base-T', '1000Base-T')
+#('Router1', 172L, 'Router1_RTR1toRTR2_1_1G', '1/6/8', None, '2/2/14', 'Router2_RTR2toRTR1_1_1G', 'Router2', 418L, 'Router', '1000Base-T', '1000Base-T')
 
 query20=fnc_build_query_connections(object_list)
 cur = db.cursor()
@@ -842,12 +828,7 @@ object_connections = list(cur.fetchall())
 # query25 brings the connection among objects.
 # This query obtains the interfaces and IP addresses.
 
-# (Router, ID, Int_name, IP)
-
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_system', '10.2.22.97')
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_BBL70toOLA70_1_1G', '10.2.34.66')
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_BBL70toOLA70_2_1G', '10.2.34.70')
-#('BA024_BBL70_SR7', 418L, 'BA024_BBL70_SR7_BBL70toCHI70_1_1G', '10.2.34.73')
+# (Router, ID, Interface_name, IP)
 
 query25=fnc_build_query_interfaces(object_list)
 cur = db.cursor()
@@ -859,10 +840,8 @@ object_interfaces = list(cur.fetchall())
 # The function fnc_cross_conn_inter(.) crosses connections with
 # interfaces to come out with the following information
 
-#('BA359_MBT70_SAR8', 105L, '1/1/7', None, '2/2/10', 'BA024_BBL70_SR7', 418L, 'Router', '10.2.34.113', '10.2.34.114', '1000Base-T', '1000Base-T')
-#('BA173_MCL70_SAR8', 144L, '1/3/7', None, '1/2/13', 'BA024_BBL71_SR7', 1407L, 'Router', '10.2.34.142', '10.2.34.141', '1000Base-T', '1000Base-T')
-#('BA123_OLA70_SAR28', 172L, '1/5/8', None, '2/2/13', 'BA024_BBL70_SR7', 418L, 'Router', '10.2.34.65', '10.2.34.66', '1000Base-T', '1000Base-T')
-#('BA123_OLA70_SAR28', 172L, '1/6/8', None, '2/2/14', 'BA024_BBL70_SR7', 418L, 'Router', '10.2.34.69', '10.2.34.70', '1000Base-T', '1000Base-T')
+#(Router1, port1, cableID, port1, Router2)
+#('Router1', 105L, '1/1/7', None, '2/2/10', 'Router2', 418L, 'Router', '10.2.34.113', '10.2.34.114', '1000Base-T', '1000Base-T')
 
 object_connections=fnc_cross_conn_inter(object_connections,object_interfaces)
 
@@ -874,11 +853,7 @@ object_connections=fnc_cross_conn_inter(object_connections,object_interfaces)
 # The result is the following.
 
 #(Router1, port1, cableID, port1, Router2)
-
-#('ST206_STA70_SR7', 319L, '1/2/8', None, '1/1/2', 'ST203_ST470_SARM', 633L, 'Router7750', '10.2.32.57', '10.2.32.58')
-#('ST206_STA70_SR7', 319L, '1/2/11', None, '1/1/1', 'ST120_CMS70_SARM', 589L, 'Router7750', '10.2.32.74', '10.2.32.73')
-#('ST120_CMS70_SARM', 589L, '1/1/2', None, '1/1/1', 'ST209_ST970_SARM', 590L, 'Router', '10.2.32.70', '10.2.32.69')
-#('ST209_ST970_SARM', 590L, '1/1/2', None, '1/1/1', 'ST202_P9J70_SARM', 2503L, 'Router', '10.2.139.45', '10.2.139.46')
+#('Router1', 105L, '1/1/7', None, '2/2/10', 'Router2', 418L, 'Router', '10.2.34.113', '10.2.34.114', '1000Base-T', '1000Base-T')
 
 object_connections=fnc_remove_routers_wotag(object_list,object_connections)
 
@@ -1052,11 +1027,8 @@ elif output_selection=="6":
 
 #((Router1_port1, Router2_port1), {label: cableID})
 
-#(('ST206_STA70_SR7_1/2/8', 'ST203_ST470_SARM_1/1/2'), {'label': ''})
-#(('ST206_STA70_SR7_1/2/11', 'ST120_CMS70_SARM_1/1/1'), {'label': ''})
-#(('ST120_CMS70_SARM_1/1/2', 'ST209_ST970_SARM_1/1/1'), {'label': ''})
-
 edges=fnc_edge_list(object_connections, graph_lag, graph_hp, graph_cpam, router_mode)
+
 
 #===================================================================
 #===================================================================
@@ -1065,12 +1037,14 @@ edges=fnc_edge_list(object_connections, graph_lag, graph_hp, graph_cpam, router_
 # With this information we filter contruct a new list grouping ports
 # per router.
 
-#(Router1, [port1, port2])
-
-#('ST120_CMS70_SARM', 'ST120_CMS70_SARM_1/1/1', {'label': '1/1/1-1Gb\n10.2.32.73'})
-#('ST120_CMS70_SARM', 'ST120_CMS70_SARM_1/1/2', {'label': '1/1/2-1Gb\n10.2.32.70'})
+#(Router1, Router1_portX, {'label':""}),(Router2, Router2_portY, {'label':""})
+#('Router1', 'Router1_1/2/7', {'label': '1/2/7\nT-1Gb\n10.2.61.146\nSync_Ref1'}), ('Router2', 'Router2_1/2/8', {'label': '1/2/8\nT-1Gb\n10.2.61.149\nSync_Ref2'})
 
 routers=fnc_node_list(object_connections,sync_dict, router_mode, graph_hp, graph_lag, graph_cpam)
+
+#===================================================================
+#===================================================================
+# Gegin the plot
 
 g0 = gv.Graph(format=format_dict[output_format], engine=algo_dict[output_algo])
 
@@ -1241,4 +1215,3 @@ elif router_mode==1 or router_mode==2 or router_mode==3:
 filename=fnc_build_filename(topo_name)
 print filename
 g0.render(filename)
-
